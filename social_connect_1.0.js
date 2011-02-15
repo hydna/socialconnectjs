@@ -1,3 +1,5 @@
+window.SocialConnect = (function() {
+
 var LOOKUP_COMMAND      = "LU";
 var CONNECT_COMMAND     = "HI";
 var DISCONNECT_COMMAND  = "BY";
@@ -423,3 +425,6 @@ SocialConnect.prototype.destroy = function(){
 	}
 	
 }
+
+return SocialConnect;
+})();
