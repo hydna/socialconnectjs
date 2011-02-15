@@ -1,7 +1,5 @@
 var app = {
     
-    // apikey : '8bd754ffa0ee6af7c7995c10733feaf9', appsecret : '262a433f5d555066a639b539dc510bb6',
-    
     settings : {
         appid : '182308388471897',
         domainaddr : 'livescenen.hydna.net:7010',
@@ -27,8 +25,6 @@ var app = {
 		});
 		
 		this.check_session();
-		
-        console.log( "app -> initializing app" );
         
     },
     
@@ -52,9 +48,6 @@ var app = {
 					
 					self.facebookconnected = true;
 					
-					console.log( "app -> facebook -> logged in with facebook!" );
-					console.log( perms );
-					
 					self.fetchuserdetails();
 					
 			       });
@@ -70,8 +63,6 @@ var app = {
 			         self.login( self.settings.permissions );
 			         
 			    });
-			    
-				console.log( "app -> facebook -> not logged in, show login btn" );
 			}
 		});
       
@@ -87,25 +78,18 @@ var app = {
 		this.facebookapi.login( function(response) {
 		    
             if (response.status == 'connected') {
+            
                 self.facebookapi.getLoginStatus(function(response) {
                     
-                    if(response.session) {
+                if(response.session) {
                         
                         self.facebookconnected = true;
                         
-                        console.log( "app -> facebook -> login" );
-                        console.log( self.facebookapi.getSession() );
-                        
                         self.fetchuserdetails();
                
-                    }else{
-                        
-                        console.log( "app -> facebook -> login canceled" );
                     }
                 }, true);
                 
-            }else{
-                console.log( "app -> facebook -> login canceled" );
             }
             
 		},opts);
@@ -130,7 +114,7 @@ var app = {
 	    this.facebookconnected = false;
         
         this.facebookapi.logout( function(response) {
-            console.log( "add -> facebook -> logged out" );
+            // handle logout complete
         });
     },
     
@@ -138,8 +122,6 @@ var app = {
         
         var self = this;
         this.facebookapi.api('/me', function(response) {
-            
-            console.log( "app -> facebook -> welcome " + response.name );
           
             $("#status").html( "Welcome " + response.name );
             $("#btns").show();
@@ -164,10 +146,7 @@ var app = {
             
             if( response.data.length > 0 ){
                 self.connectfriends( response.data );
-            }else{
-                console.log( "app -> user has no facebook friends" );
             }
-    
         });
     },
     
