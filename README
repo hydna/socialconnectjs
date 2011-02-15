@@ -1,4 +1,1 @@
-Simple example using facebook connect and socialconnect behaviour. You need
-to test this online and setup a facebook app in the facebook developer section.
-You will get an appid from your facebook app creation process, enter this
-value in app.js under settings.
+Simple example using facebook connect and socialconnect behaviour. You need to test this online and setup a facebook app in the facebook developer section. You will get an appid from your facebook app creation process, enter this value in app.js under settings.
