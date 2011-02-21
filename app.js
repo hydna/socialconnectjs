@@ -158,10 +158,15 @@ var app = {
         // a friend connects
         this.facebookchannel.onfriendopen = function( user ){
             console.log( "app -> " + user.name + " connected" );
+            
+            $('body').append( "<p id='"+user.id+"'>"+user.name+"</p>" );
+            
         }
         // when a friend logs out or closes app
         this.facebookchannel.onfriendclose = function( user ){
             console.log( "app -> " + user.name + " disconnected" );
+            
+             $('#'+user.id).remove();
         }
         // whenever lookup is complete
         this.facebookchannel.onlookup = function( count ){

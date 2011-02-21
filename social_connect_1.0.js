@@ -248,6 +248,8 @@ SocialConnect.prototype.openFriendStream = function( id, stream ){
 		var fstream = new HydnaStream( this._domain_addr + "/" + stream, 'r', this._userid +","+ this._me_stream._addr );
 		fstream.onerror = function( evt ){
 		    // need to add error callbacks
+		    console.log( "friend error" );
+		    console.log( evt );
 		}
 		
 		fstream.onmessage = function( msg ){
