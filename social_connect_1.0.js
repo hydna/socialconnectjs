@@ -5,7 +5,7 @@ var CONNECT_COMMAND     = "HI";
 var DISCONNECT_COMMAND  = "BY";
 var ALREADY_CONNECTED   = "ALREADY_CONNECTED";
 
-var MAX_CHUNK_SIZE      = 200;
+var MAX_CHUNK_SIZE      = 300;
 var COMMAND_SIZE        = 2;
 
 function SocialConnect( domainaddr, rendevousaddr ){
@@ -82,10 +82,6 @@ SocialConnect.prototype.handleAlreadyConnected = function(){
     
 }
 
-SocialConnect.prototype.handleUserData = function( msg ){
-    this.onmessage && this.onmessage( msg );
-}
-
 SocialConnect.prototype.handleUserOpen = function(){
     
     this._connecting = false;
@@ -115,10 +111,12 @@ SocialConnect.prototype.handleUserSignal = function( msg, flag ){
 		
 			case LOOKUP_COMMAND:
 			
+			    this._chunks_fetched++;
+			
 				if( data.length > 0 ){
 					
 					var raw = data.split( ",");
-			
+
 					for( var i in raw ){
 				
 						var keyval = raw[i].split("=");
@@ -127,24 +125,17 @@ SocialConnect.prototype.handleUserSignal = function( msg, flag ){
 
 					}
 			
-					this._chunks_fetched++;
-			
 					if( this._chunks_fetched == this._chunks.length ){
-				
-						this._chunks = new Array();
-						this._chunks_fetched = 0;
-						this._chunks_index = 0;
-				
-						this._fetching = false;
-				
-						this.openFriendStreams( this._connected_friends );
-						
-						this.onlookup && this.onlookup( this._connected_friends.length );
+					    
+					    this.lookupComplete();
 					}
 					
 				}else{
+				    
+				    if( this._chunks_fetched == this._chunks.length ){
 					
-					this.onlookup && this.onlookup( 0 );
+					    this.lookupComplete();
+				    }
 					
 				}
 			
@@ -167,6 +158,20 @@ SocialConnect.prototype.handleUserSignal = function( msg, flag ){
 	}
 }
 
+SocialConnect.prototype.lookupComplete = function(){
+
+	this._chunks = new Array();
+	this._chunks_fetched = 0;
+	this._chunks_index = 0;
+
+	this._fetching = false;
+
+	this.openFriendStreams( this._connected_friends );
+	
+	this.onlookup && this.onlookup( this._connected_friends.length );
+    
+}
+
 /*
 * Send to all connected friends
 */
@@ -186,19 +191,17 @@ SocialConnect.prototype.lookup = function(){
 		this._chunks = [];
 			
 		if( this._friends.length > MAX_CHUNK_SIZE ){
-		    
-		    console.log( "SocialConnect -> you have more then "+ MAX_CHUNK_SIZE +" friends" );
 				
-			var chunk_count = Math.round( (this._friends.length / MAX_CHUNK_SIZE) + .5 );
+			var chunk_count = Math.round( (this._friends.length / MAX_CHUNK_SIZE) );
 			
-			console.log( "SocialConnect -> you have "+this._friends.length+" friends thats "+ chunk_count +" chunks." );
+			if( this._friends.length % MAX_CHUNK_SIZE > 0 ){
+			    chunk_count = Math.round( (this._friends.length / MAX_CHUNK_SIZE) + .5 );
+			}
 				
 			for( var i = 0; i < chunk_count; i++ ){
 
 				var startindex = i * MAX_CHUNK_SIZE;
 				var endindex = Math.min( startindex + MAX_CHUNK_SIZE, this._friends.length );
-				
-				console.log( "SocialConnect -> startindex: "+ startindex +" , endindex: "+ endindex );
 					
 				this._chunks.push( this._friends.slice( startindex, endindex ) );
 			}
@@ -239,9 +242,9 @@ SocialConnect.prototype.performLookup = function( chunk ){
 		    if( this._chunks_index < this._chunks.length ){
 			    this.performLookup(this._chunks[this._chunks_index]);
 		    }
+		    
+		    return true;
 		}
-		
-		return true;
 	}
 	
 	return false;
@@ -258,10 +261,15 @@ SocialConnect.prototype.removeStream = function( id ){
     if( this._connected_friends_streams[id] != null && this._connected_friends_streams[id] != undefined ){
 			
 		var conn = this._connected_friends_streams[id].stream;
-        conn.close();
 		
 		delete this._connected_friends_streams[id];
+		
+		conn.close();
+		
+		return true;
 	}
+	
+	return false;
 }
 
 SocialConnect.prototype.openFriendStream = function( id, stream ){
@@ -302,7 +310,7 @@ SocialConnect.prototype.openFriendStream = function( id, stream ){
 		
 		fstream.onclose = function(){
 		    
-		    self.onfriendclose && self.onfriendclose( self.getPropsForFriend( {id: id} ) ); 
+		    self.removeFriend( id );
 		}
 
 		this._connected_friends_streams[id] = { id: id, stream: fstream, connected: false };
@@ -338,21 +346,26 @@ SocialConnect.prototype.handleFriendSignal = function( msg ){
 				if( data.length > 0 ){
 			
 					var keyval = data.split( ",");
-		
-					if( this.isFriendListed( keyval[0] ) ){
 					
-						this.removeStream( keyval[0] );
-					
-						var id = keyval[0];
-						
-						this.onfriendclose && this.onfriendclose( this.getPropsForFriend( {id: id} ) ); 
-					
-					}
+					this.removeFriend( keyval[0] );
 				}
 			
 			break;
 		}
 	}
+}
+
+SocialConnect.prototype.removeFriend = function( id ){
+    
+    if( this.isFriendListed( id ) ){
+	
+		if( this.removeStream( id ) ){
+		
+		    this.onfriendclose && this.onfriendclose( this.getPropsForFriend( {id: id} ) ); 
+	    }
+	
+	}
+    
 }
 
 SocialConnect.prototype.handleFriendMessage = function( msg, user ){
