@@ -2,8 +2,8 @@ var app = {
     
     settings : {
         appid : '182308388471897',
-        domainaddr : 'livescenen.hydna.net:7010',
-        rendevousaddr : 'livescenen.hydna.net:7010/10000',
+        domainaddr : '192.168.0.17:7010',
+        rendevousaddr : '192.168.0.17:7010/10000',
         permissions: { perms:'read_stream,publish_stream' }
     },
     
@@ -175,6 +175,11 @@ var app = {
         // when friend sends a message
         this.facebookchannel.onfriendmessage = function( msg, user ){
             console.log( "app -> received message from "+user.name+" : " + msg );
+        }
+        
+        // when error
+        this.facebookchannel.onerror = function( msg ){
+            console.log( "app -> something went wrong "+ msg );
         }
     }
 }
