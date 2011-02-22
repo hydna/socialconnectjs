@@ -52,7 +52,7 @@ SocialConnect.prototype.connect = function( id, friends, servicetag ){
 		this._servicetag = servicetag;
 		this._connecting = true;
 
-		this._me_stream = new HydnaStream( this._rendevous_addr, 'rwe', this._userid );
+		this._me_stream = new HydnaStream( this._rendevous_addr, 'we', this._userid );
 		
 		this._me_stream.onerror = function( evt ){
 		    // handle errors
@@ -61,10 +61,6 @@ SocialConnect.prototype.connect = function( id, friends, servicetag ){
 		    }
 		    
 		}
-		
-		this._me_stream.onmessage = function( msg ){
-		    self.handleUserData( msg );
-	    }
 		
 		this._me_stream.onsignal = function( msg, flag ){
 		    self.handleUserSignal( msg, flag );
@@ -181,19 +177,6 @@ SocialConnect.prototype.send = function( msg ){
     }
 }
 
-/*
-* Send to specific friend
-*/
-
-SocialConnect.prototype.sendfriend = function( id, msg ){
-    
-    if( this.isFriendListed( id ) ){
-        var conn = this._connected_friends_streams[id].stream;
-        conn.send( msg );
-    }
-    
-}
-
 SocialConnect.prototype.lookup = function(){
 		
     if( this._friends.length > 0 && this._fetching == false ){
@@ -281,7 +264,7 @@ SocialConnect.prototype.openFriendStream = function( id, stream ){
 	    
 	    var self = this;
 	    
-		var fstream = new HydnaStream( this._domain_addr + "/" + stream, 'rw', this._userid +","+ this._me_stream._addr );
+		var fstream = new HydnaStream( this._domain_addr + "/" + stream, 'r', this._userid +","+ this._me_stream._addr );
 		fstream.onerror = function( evt ){
 		    // need to add error callbacks
 		}
