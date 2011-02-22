@@ -5,7 +5,7 @@ var CONNECT_COMMAND     = "HI";
 var DISCONNECT_COMMAND  = "BY";
 var ALREADY_CONNECTED   = "ALREADY_CONNECTED";
 
-var MAX_CHUNK_SIZE      = 100;
+var MAX_CHUNK_SIZE      = 200;
 var COMMAND_SIZE        = 2;
 
 function SocialConnect( domainaddr, rendevousaddr ){
@@ -186,13 +186,19 @@ SocialConnect.prototype.lookup = function(){
 		this._chunks = [];
 			
 		if( this._friends.length > MAX_CHUNK_SIZE ){
+		    
+		    console.log( "SocialConnect -> you have more then "+ MAX_CHUNK_SIZE +" friends" );
 				
 			var chunk_count = Math.round( (this._friends.length / MAX_CHUNK_SIZE) + .5 );
+			
+			console.log( "SocialConnect -> you have "+this._friends.length+" friends thats "+ chunk_count +" chunks." );
 				
 			for( var i = 0; i < chunk_count; i++ ){
-					
+
 				var startindex = i * MAX_CHUNK_SIZE;
 				var endindex = Math.min( startindex + MAX_CHUNK_SIZE, this._friends.length );
+				
+				console.log( "SocialConnect -> startindex: "+ startindex +" , endindex: "+ endindex );
 					
 				this._chunks.push( this._friends.slice( startindex, endindex ) );
 			}
@@ -252,7 +258,7 @@ SocialConnect.prototype.removeStream = function( id ){
     if( this._connected_friends_streams[id] != null && this._connected_friends_streams[id] != undefined ){
 			
 		var conn = this._connected_friends_streams[id].stream;
-        conn.end();
+        conn.close();
 		
 		delete this._connected_friends_streams[id];
 	}
@@ -264,7 +270,7 @@ SocialConnect.prototype.openFriendStream = function( id, stream ){
 	    
 	    var self = this;
 	    
-		var fstream = new HydnaStream( this._domain_addr + "/" + stream, 'r', this._userid +","+ this._me_stream._addr );
+		var fstream = new HydnaStream( this._domain_addr + "/" + stream, 'r', this._userid +","+ this._me_stream.uri.ch );
 		fstream.onerror = function( evt ){
 		    // need to add error callbacks
 		}
@@ -420,13 +426,13 @@ SocialConnect.prototype.destroy = function(){
 		
 		if( this._me_stream != null ){
 			
-			this._me_stream.end();
+			this._me_stream.close();
 		}
 		
 		for( var i in this._connected_friends_streams ){
 			
 			var stream = this._connected_friends_streams[i].stream;
-			stream.end();
+			stream.close();
 			
 			this._connected_friends_streams[i] = null;
 		}

@@ -2,8 +2,8 @@ var app = {
     
     settings : {
         appid : '182308388471897',
-        domainaddr : '192.168.0.17:7010',
-        rendevousaddr : '192.168.0.17:7010/10000',
+        domainaddr : 'demo.hydna.net:80',
+        rendevousaddr : 'demo.hydna.net:80/10000',
         permissions: { perms:'read_stream,publish_stream' }
     },
     
