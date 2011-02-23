@@ -56,7 +56,7 @@ SocialConnect.prototype.connect = function( id, friends, servicetag ){
 		
 		this._me_stream.onerror = function( evt ){
 		    // handle errors
-		    if( evt.message == ALREADY_CONNECTED ){
+		    if( evt.error.message == ALREADY_CONNECTED ){
 		        self.handleAlreadyConnected();
 		    }
 		    
@@ -78,7 +78,7 @@ SocialConnect.prototype.connect = function( id, friends, servicetag ){
 
 SocialConnect.prototype.handleAlreadyConnected = function(){
     
-    this.onerror && this.onerror( ALREADY_CONNECTED );
+    this.onalreadyconnected && this.onalreadyconnected( ALREADY_CONNECTED );
     
 }
 
