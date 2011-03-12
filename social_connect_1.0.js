@@ -17,10 +17,10 @@ function SocialConnect( domainaddr, rendevousaddr ){
     self._connected = false;
     self._connecting = false;
     self._fetching = false;
-    self._connected_friends = new Array();
+    self._connected_friends = [];
     self._connected_friends_streams = {};
-    self._friends = new Array();
-    self._chunks = new Array();
+    self._friends = [];
+    self._chunks = [];
     self._chunks_index = 0;
     self._chunks_fetched = 0;
     self._servicetag = "";
@@ -42,9 +42,11 @@ SocialConnect.prototype.connect = function( id, friends, servicetag ){
 		}
 			
 		// add service tag in not added already
-		for( var i in friends ){
-			if( friends[i].id.substr(0, servicetag.length ) != servicetag ){
-				friends[i].id = servicetag + friends[i].id;
+		for( var i = 0, l = friends.length; i < l; i++ ){
+			if( friends.hasOwnProperty( i ) ){
+				if( friends[i].id.substr(0, servicetag.length ) != servicetag ){
+					friends[i].id = servicetag + friends[i].id;
+				}
 			}
 		}
 			
@@ -117,7 +119,7 @@ SocialConnect.prototype.handleUserSignal = function( msg, flag ){
 					
 					var raw = data.split( ",");
 
-					for( var i in raw ){
+					for( var i = 0, l = raw.length; i < l; i++  ){
 				
 						var keyval = raw[i].split("=");
 				
@@ -225,9 +227,8 @@ SocialConnect.prototype.performLookup = function( chunk ){
 		
 		var lookup_str = LOOKUP_COMMAND;
 		var ids = new Array();
-		var count = chunk.length;
 
-		for( var i = 0; i < count; i++ ){
+		for( var i = 0, l = chunk.length; i < l; i++ ){
 		 	ids.push( chunk[i].id );
 		}
 		
@@ -252,10 +253,10 @@ SocialConnect.prototype.performLookup = function( chunk ){
 
 SocialConnect.prototype.openFriendStreams = function( friends ){
 	
-	var count = friends.length;
-	
-	for( var i = 0; i < count; i++ ){
-		this.openFriendStream( friends[i].id, friends[i].stream );
+	for( var i = 0, l = friends.length; i < l; i++  ){
+		if( friends.hasOwnProperty(i) ){
+			this.openFriendStream( friends[i].id, friends[i].stream );
+		}
 	}
 	
 }
@@ -299,15 +300,18 @@ SocialConnect.prototype.openFriendStream = function( id, stream ){
 			
 			for( var i in self._connected_friends_streams ){
 				
-				if( self._connected_friends_streams[i].stream == fstream ){
+				if( self._connected_friends_streams.hasOwnProperty(i) ){
+				
+					if( self._connected_friends_streams[i].stream == fstream ){
 						
-					self._connected_friends_streams[i].connected = true;
+						self._connected_friends_streams[i].connected = true;
 					
-					var id = self._connected_friends_streams[i].id;
+						var id = self._connected_friends_streams[i].id;
 					
-					self.onfriendopen && self.onfriendopen( self.getPropsForFriend( {id: id} ) ); 
+						self.onfriendopen && self.onfriendopen( self.getPropsForFriend( {id: id} ) ); 
 						
-					break;
+						break;
+					}
 				}
 			}
 		}
@@ -382,15 +386,19 @@ SocialConnect.prototype.getConnectedFriends = function(){
 	var friends = [];
 	
 	for( var i in this._connected_friends_streams ){
-		if( this._connected_friends_streams[i].connected ){
+		
+		if( this._connected_friends_streams.hasOwnProperty(i) ){
+		
+			if( this._connected_friends_streams[i].connected ){
 			
-			var id = this._connected_friends_streams[i].id;
+				var id = this._connected_friends_streams[i].id;
 			
-			var friendobj = { id: id };
+				var friendobj = { id: id };
 			
-			friendobj = this.getPropsForFriend( friendobj );
+				friendobj = this.getPropsForFriend( friendobj );
 			
-			friends.push( friendobj );
+				friends.push( friendobj );
+			}
 		}
 	}
 	
@@ -401,21 +409,27 @@ SocialConnect.prototype.getPropsForFriend = function( friend ){
 		
 	var fixedfriend = { id: friend.id };
 		
-	for( var i in this._friends ){
+	for( var i = 0, l = this._friends.length; i < l; i++){
+		
+		if( this._friends.hasOwnProperty(i) ){
 			
-		if( this._friends[i].id == friend.id ){
+			if( this._friends[i].id == friend.id ){
 				
-			for( var j in this._friends[i] ){
+				for( var j in this._friends[i] ){
 					
-				if( j != "id" ){
+					if(  this._friends[i].hasOwnProperty(j) ){
+					
+						if( j != "id" ){
 						
-					fixedfriend[j] = this._friends[i][j];
+							fixedfriend[j] = this._friends[i][j];
+						}
+					}
 				}
+				
+				fixedfriend.id = this.getServiceTagNeutral( fixedfriend.id );
+				
+				return fixedfriend;
 			}
-				
-			fixedfriend.id = this.getServiceTagNeutral( fixedfriend.id );
-				
-			return fixedfriend;
 		}
 	}
 		
@@ -448,19 +462,22 @@ SocialConnect.prototype.destroy = function(){
 		
 		for( var i in this._connected_friends_streams ){
 			
-			var stream = this._connected_friends_streams[i].stream;
-			stream.close();
+			if( this._connected_friends_streams.hasOwnProperty(i) )
+				
+				var stream = this._connected_friends_streams[i].stream;
+				stream.close();
 			
-			this._connected_friends_streams[i] = null;
+				delete this._connected_friends_streams[i];
+			}
 		}
 		
 		this._connected = false;
 		this._connecting = false;
 		this._fetching = false;
-		this._connected_friends = new Array();
+		this._connected_friends = [];
 		this._connected_friends_streams = {};
-		this._friends = new Array();
-		this._chunks = new Array();
+		this._friends = [];
+		this._chunks = [];
 		this._chunks_index = 0;
 		this._chunks_fetched = 0;
 		
