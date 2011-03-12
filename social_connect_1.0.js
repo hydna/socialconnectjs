@@ -251,9 +251,13 @@ SocialConnect.prototype.performLookup = function( chunk ){
 }
 
 SocialConnect.prototype.openFriendStreams = function( friends ){
-	for( var i in friends ){
+	
+	var count = friends.length;
+	
+	for( var i = 0; i < count; i++ ){
 		this.openFriendStream( friends[i].id, friends[i].stream );
 	}
+	
 }
 
 SocialConnect.prototype.removeStream = function( id ){
